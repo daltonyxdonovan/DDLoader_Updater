@@ -128,6 +128,11 @@ void renameFile(std::string fileName, std::string desiredName)
 	std::filesystem::rename(fileName, desiredName);
 }
 
+void renameFolder(std::string folderName, std::string desiredName)
+{
+	std::filesystem::rename(folderName, desiredName);
+}
+
 
 int main()
 {
