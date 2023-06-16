@@ -133,6 +133,12 @@ void renameFolder(std::string folderName, std::string desiredName)
 	std::filesystem::rename(folderName, desiredName);
 }
 
+void runFile(std::string fileName)
+{
+	std::string command = "start " + fileName;
+	system(command.c_str());
+}
+
 
 int main()
 {
