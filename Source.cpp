@@ -21,25 +21,53 @@ const int height{ 400 };
 //methods
 
 //method to zip a folder
-void zipFolder(std::string folderName)
+bool zipFolder(std::string folderName)
 {
-	std::string command = "powershell Compress-Archive -Path " + folderName + " -DestinationPath " + folderName + ".zip";
-	system(command.c_str());
-	std::filesystem::remove_all(folderName);
+	bool success = false;
+	try
+	{
+		std::string command = "powershell Compress-Archive -Path " + folderName + " -DestinationPath " + folderName + ".zip";
+		system(command.c_str());
+		std::filesystem::remove_all(folderName);
+		success = true;
+	}
+	catch (const std::filesystem::filesystem_error& ex)
+	{
+		if (ex.code() == std::errc::no_such_file_or_directory)
+		{
+			throw std::invalid_argument("The folder " + folderName + " does not exist, please make sure you haven't separated the files for DDLoader.");
+		}
+		else
+		{
+			throw ex;
+		}
+	}
+	return success;
 }
 
-void downloadZip(std::string url, std::string fileName)
+bool downloadZip(std::string url, std::string fileName)
 {
-	sf::Http http;
-	http.setHost(url);
-	sf::Http::Request request;
-	request.setMethod(sf::Http::Request::Get);
-	request.setUri("/" + fileName);
-	sf::Http::Response response = http.sendRequest(request);
-	std::ofstream file;
-	file.open(fileName, std::ios::binary);
-	file.write(response.getBody().c_str(), response.getBody().size());
-	file.close();
+	bool success = false;
+	try
+	{
+		sf::Http http;
+		http.setHost(url);
+		sf::Http::Request request;
+		request.setMethod(sf::Http::Request::Get);
+		request.setUri("/" + fileName);
+		sf::Http::Response response = http.sendRequest(request);
+		std::ofstream file;
+		file.open(fileName, std::ios::binary);
+		file.write(response.getBody().c_str(), response.getBody().size());
+		file.close();
+		success = true;
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error: " << e.what() << std::endl;
+		success = false;
+	}
+	return success;
 }
 
 void unzip(std::string fileName)
@@ -133,12 +161,24 @@ void renameFolder(std::string folderName, std::string desiredName)
 	std::filesystem::rename(folderName, desiredName);
 }
 
+void renameZip(std::string zipName, std::string zipDesiredName)
+{
+	
+	std::filesystem::rename(zipName, zipDesiredName);
+}
+
 void runFile(std::string fileName)
 {
 	std::string command = "start " + fileName;
 	system(command.c_str());
 }
 
+void moveEXEIntoZip()
+{
+	std::string command = "powershell Compress-Archive -Path DDLMM.exe -DestinationPath resources.zip";
+	system(command.c_str());
+	std::filesystem::remove("DDLoader.exe");
+}
 
 int main()
 {
@@ -149,6 +189,25 @@ int main()
 	icon.loadFromFile("Icon.png");
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	
+	//zip up 'resources' folder
+	zipFolder("resources");
+
+	moveEXEIntoZip();
+
+	renameZip("resources.zip", "DDLoader_Backup.zip");
+
+	//download zip
+	downloadZip("47.41.98.12:8000/loader/DDLoader.zip", "DDLoader.zip");
+
+	//unzip zip
+	unzip("DDLoader.zip");
+
+	//delete zip
+	deleteFile("DDLoader.zip");
+
+	//run DDLoader
+	runFile("DDLMM.exe");
+
 
 	
 	
