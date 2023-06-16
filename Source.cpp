@@ -67,24 +67,35 @@ bool downloadZip(std::string url, std::string fileName)
 {
 	try
 	{
+		// send request
 		sf::Http http;
 		http.setHost(url);
 		sf::Http::Request request;
 		request.setMethod(sf::Http::Request::Get);
 		request.setUri("/" + fileName);
 		sf::Http::Response response = http.sendRequest(request);
-		std::ofstream file;
-		file.open(fileName, std::ios::binary);
-		file.write(response.getBody().c_str(), response.getBody().size());
-		file.close();
-		return true;
+
+		// check status code
+		if (response.getStatus() == sf::Http::Response::Ok) {
+			// save file
+			std::ofstream file;
+			file.open(fileName, std::ios::binary);
+			file.write(response.getBody().c_str(), response.getBody().size());
+			file.close();
+			return true;
+		}
+		else {
+			std::cout << "Error: could not download file" << std::endl;
+			return false;
+		}
 	}
 	catch (const std::exception& e)
 	{
 		std::cerr << "Error: " << e.what() << std::endl;
+		return false;
 	}
-	return false;
 }
+
 
 
 void unzip(std::string fileName)
@@ -137,7 +148,7 @@ void moveFile(std::string fileName, std::string directory)
 void Log(std::string message)
 {
 	std::ofstream file;
-	file.open("DDLoader_log.txt", std::ios::app);
+	file.open("DDLoader_errorlog.txt", std::ios::app);
 	file << message << std::endl;
 	file.close();
 }
@@ -167,11 +178,11 @@ bool homeServerActive()
 {
 
 	bool success = false;
-	//check if server is actually online by pinging http://47.41.98.12:8000
+	//check if server is actually online by pinging http://192.168.1.48:8000 //47.41.98.12
 	try
 	{
 		sf::Http http;
-		http.setHost("47.41.98.12", 8000); //fix: removed "http://", passed in port as a separate parameter
+		http.setHost("192.168.1.48", 8000); //fix: removed "http://", passed in port as a separate parameter
 
 		//send a simple, basic get request to make sure it's online.
 		sf::Http::Request request;
@@ -212,15 +223,33 @@ int main()
 	deleteExtraBackups();
 
 	//download zip
-	if (downloadZip("http://192.168.1.48:8000/loader", "DDLoader.zip"))
+	if (downloadZip("http://192.168.1.48:8000", "loader/DDLoader.zip"))
 	{
 		
 	}
 	else
 	{
 		Log("Failed to download zip.\nAttempting troubleshooting...\n\n\n=====================================\n");
-		Log("Has Internet? " + hasInternet());
-		Log("Home Server Active? " + homeServerActive());
+		if (hasInternet())
+		{
+			
+			Log("hasInternet() returned true.\n");
+			if (homeServerActive())
+			{
+				Log("homeServerActive() returned true. If we've gotten to this point, something weird is going on.\n");
+				
+			}
+			else
+			{
+				Log("homeServerActive() returned false. Please contact Daltonyx on Discord or join at https://discord.gg/daMWV3TTea and leave a message!\n");
+			}
+
+		}
+		else
+		{
+			Log("hasInternet() returned false.\n");
+		}
+
 		return 1;
 	}
 
