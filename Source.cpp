@@ -65,7 +65,6 @@ bool zipFolder(std::string folderName)
 
 bool downloadZip(std::string url, std::string fileName)
 {
-	bool success = false;
 	try
 	{
 		sf::Http http;
@@ -78,15 +77,15 @@ bool downloadZip(std::string url, std::string fileName)
 		file.open(fileName, std::ios::binary);
 		file.write(response.getBody().c_str(), response.getBody().size());
 		file.close();
-		success = true;
+		return true;
 	}
 	catch (const std::exception& e)
 	{
 		std::cerr << "Error: " << e.what() << std::endl;
-		success = false;
 	}
-	return success;
+	return false;
 }
+
 
 void unzip(std::string fileName)
 {
