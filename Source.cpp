@@ -123,6 +123,11 @@ void createShortcut(std::string fileName, std::string destination, std::string i
 	system(command.c_str());
 }
 
+void renameFile(std::string fileName, std::string desiredName)
+{
+	std::filesystem::rename(fileName, desiredName);
+}
+
 
 int main()
 {
@@ -133,6 +138,7 @@ int main()
 	icon.loadFromFile("Icon.png");
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 	
+
 	
 	
 	//return okay if the program exits properly
