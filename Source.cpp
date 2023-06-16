@@ -135,6 +135,64 @@ void moveFile(std::string fileName, std::string directory)
 	std::cout << "The file has been moved to the directory." << std::endl;
 }
 
+void Log(std::string message)
+{
+	std::ofstream file;
+	file.open("DDLoader_log.txt", std::ios::app);
+	file << message << std::endl;
+	file.close();
+}
+
+bool hasInternet()
+{
+	bool success = false;
+	//check if there is internet by pinging google
+	try
+	{
+		sf::Http http;
+		http.setHost("www.google.com");
+		sf::Http::Request request;
+		request.setMethod(sf::Http::Request::Get);
+		request.setUri("/");
+		sf::Http::Response response = http.sendRequest(request);
+		success = true;
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error: " << e.what() << std::endl;
+		success = false;
+	}
+}
+
+bool homeServerActive()
+{
+
+	bool success = false;
+	//check if server is actually online by pinging http://47.41.98.12:8000
+	try
+	{
+		sf::Http http;
+		http.setHost("47.41.98.12", 8000); //fix: removed "http://", passed in port as a separate parameter
+
+		//send a simple, basic get request to make sure it's online.
+		sf::Http::Request request;
+		request.setMethod(sf::Http::Request::Get);
+		request.setUri("/");
+		sf::Http::Response response = http.sendRequest(request);
+		if (response.getStatus() == sf::Http::Response::Status::Ok)
+		{
+			success = true;
+		}
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << "Error: " << e.what() << std::endl;
+		success = false;
+	}
+
+	//fix: return the value back
+	return success;
+}
 
 
 int main()
@@ -155,7 +213,17 @@ int main()
 	deleteExtraBackups();
 
 	//download zip
-	downloadZip("47.41.98.12:8000/loader/DDLoader.zip", "DDLoader.zip");
+	if (downloadZip("http://192.168.1.48:8000/loader", "DDLoader.zip"))
+	{
+		
+	}
+	else
+	{
+		Log("Failed to download zip.\nAttempting troubleshooting...\n\n\n=====================================\n");
+		Log("Has Internet? " + hasInternet());
+		Log("Home Server Active? " + homeServerActive());
+		return 1;
+	}
 
 	//unzip zip
 	unzip("DDLoader.zip");
