@@ -148,6 +148,12 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DDLoader_Updater.rc" />
+  </ItemGroup>
+  <ItemGroup>
     <Image Include="Icon.ico" />
     <Image Include="Icon.png" />
   </ItemGroup>

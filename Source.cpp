@@ -19,6 +19,26 @@ const int height{ 400 };
 
 
 //methods
+void checkForBackups()
+{
+	//if there is a zip named 'DDLoader_Backup.zip' then rename it to 'DDLoader_Backup2.zip'
+	if (std::filesystem::exists("DDLoader_Backup.zip"))
+	{
+		std::filesystem::rename("DDLoader_Backup.zip", "DDLoader_Backup2.zip");
+	}
+
+}
+
+void deleteExtraBackups()
+{
+	
+	//if there is a zip named 'DDLoader_Backup2.zip' then delete it
+	if (std::filesystem::exists("DDLoader_Backup2.zip"))
+	{
+		std::filesystem::remove("DDLoader_Backup2.zip");
+	}
+}
+
 bool zipFolder(std::string folderName)
 {
 	bool success = false;
@@ -103,6 +123,9 @@ void moveEXEIntoZip()
 
 int main()
 {
+	//check for backups
+	checkForBackups();
+
 	//zip up 'resources' folder
 	zipFolder("resources");
 
@@ -111,6 +134,9 @@ int main()
 
 	//rename zip to backup
 	renameZip("resources.zip", "DDLoader_Backup.zip");
+
+	//delete extra backups
+	deleteExtraBackups();
 
 	//download zip
 	downloadZip("47.41.98.12:8000/loader/DDLoader.zip", "DDLoader.zip");
