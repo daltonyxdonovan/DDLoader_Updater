@@ -112,11 +112,27 @@ void runFile(std::string fileName)
 	system(command.c_str());
 }
 
-void moveEXEIntoZip()
+void moveFile(std::string fileName, std::string directory)
 {
-	std::string command = "powershell Compress-Archive -Path DDLMM.exe -DestinationPath resources.zip";
-	system(command.c_str());
-	std::filesystem::remove("DDLoader.exe");
+	if (!std::filesystem::exists(fileName)) //check if the file exists
+	{
+		std::cout << "The file does not exist." << std::endl;
+		return;
+	}
+	if (!std::filesystem::is_directory(directory)) //check if the directory exists
+	{
+		std::cout << "The directory does not exist." << std::endl;
+		return;
+	}
+	if (std::filesystem::exists(directory + "\\" + fileName)) //check if the file already exists in the directory
+	{
+		std::cout << "The file already exists in the directory." << std::endl;
+		return;
+	}
+
+	//use rename method to move the file
+	std::filesystem::rename(fileName, directory + "\\" + fileName);
+	std::cout << "The file has been moved to the directory." << std::endl;
 }
 
 
@@ -126,11 +142,11 @@ int main()
 	//check for backups
 	checkForBackups();
 
+	//move DDLMM to resources folder
+	moveFile("DDLMM.exe", "resources");
+
 	//zip up 'resources' folder
 	zipFolder("resources");
-
-	//move exe into zip
-	moveEXEIntoZip();
 
 	//rename zip to backup
 	renameZip("resources.zip", "DDLoader_Backup.zip");
