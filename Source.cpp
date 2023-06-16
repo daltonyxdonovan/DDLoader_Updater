@@ -103,18 +103,13 @@ void moveEXEIntoZip()
 
 int main()
 {
-	//set up window
-	sf::RenderWindow window(sf::VideoMode(width, height), "DDLoader Updater");
-	sf::Event event;
-	sf::Image icon;
-	icon.loadFromFile("Icon.png");
-	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
-	
 	//zip up 'resources' folder
 	zipFolder("resources");
 
+	//move exe into zip
 	moveEXEIntoZip();
 
+	//rename zip to backup
 	renameZip("resources.zip", "DDLoader_Backup.zip");
 
 	//download zip
@@ -129,9 +124,6 @@ int main()
 	//run DDLoader
 	runFile("DDLMM.exe");
 
-
-	
-	
 	//return okay if the program exits properly
     return 0;
 }
