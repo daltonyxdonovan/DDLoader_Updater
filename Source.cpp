@@ -69,7 +69,7 @@ bool downloadZip()
 	{
 		// send request
 		sf::Http http;
-		http.setHost("192.168.1.48", 8000);
+		http.setHost("47.41.98.12", 8000);
 		sf::Http::Request request("/loader/DDLoader.zip", sf::Http::Request::Get);
 		sf::Http::Response response = http.sendRequest(request);
 
@@ -94,17 +94,12 @@ bool downloadZip()
 	}
 }
 
-
-
-
-
 void unzip(std::string fileName)
 {
 	std::string command = "powershell Expand-Archive -Path " + fileName + " -DestinationPath " + ".";
 	system(command.c_str());
 	std::filesystem::remove(fileName);
 }
-
 
 void deleteFile(std::string fileName)
 {
@@ -179,11 +174,11 @@ bool homeServerActive()
 {
 
 	bool success = false;
-	//check if server is actually online by pinging http://192.168.1.48:8000 //47.41.98.12
+	//check if server is actually online by pinging http://47.41.98.12:8000
 	try
 	{
 		sf::Http http;
-		http.setHost("192.168.1.48", 8000); //fix: removed "http://", passed in port as a separate parameter
+		http.setHost("47.41.98.12", 8000); //fix: removed "http://", passed in port as a separate parameter
 
 		//send a simple, basic get request to make sure it's online.
 		sf::Http::Request request;
