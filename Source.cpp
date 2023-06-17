@@ -63,29 +63,27 @@ bool zipFolder(std::string folderName)
 	return success;
 }
 
-bool downloadZip(std::string url, std::string fileName)
+bool downloadZip()
 {
 	try
 	{
 		// send request
 		sf::Http http;
-		http.setHost(url);
-		sf::Http::Request request;
-		request.setMethod(sf::Http::Request::Get);
-		request.setUri("/" + fileName);
+		http.setHost("192.168.1.48", 8000);
+		sf::Http::Request request("/loader/DDLoader.zip", sf::Http::Request::Get);
 		sf::Http::Response response = http.sendRequest(request);
 
 		// check status code
 		if (response.getStatus() == sf::Http::Response::Ok) {
 			// save file
 			std::ofstream file;
-			file.open(fileName, std::ios::binary);
+			file.open("DDLoader.zip", std::ios::binary);
 			file.write(response.getBody().c_str(), response.getBody().size());
 			file.close();
 			return true;
 		}
 		else {
-			std::cout << "Error: could not download file" << std::endl;
+			std::cout << "Error: could not download file. Writing troubleshooting to DDLoader_errorlog.txt\nDO NOT CLOSE PROGRAM PLEASE. IT WILL CLOSE ITSELF AFTER WRITING LOG." << std::endl;
 			return false;
 		}
 	}
@@ -98,12 +96,15 @@ bool downloadZip(std::string url, std::string fileName)
 
 
 
+
+
 void unzip(std::string fileName)
 {
-	std::string command = "powershell Expand-Archive -Path " + fileName + " -DestinationPath " + fileName.substr(0, fileName.size() - 4);
+	std::string command = "powershell Expand-Archive -Path " + fileName + " -DestinationPath " + ".";
 	system(command.c_str());
 	std::filesystem::remove(fileName);
 }
+
 
 void deleteFile(std::string fileName)
 {
@@ -204,6 +205,25 @@ bool homeServerActive()
 	return success;
 }
 
+void restoreBackup()
+{
+	
+	//check if backup exists
+	if (!std::filesystem::exists("DDLoader_Backup.zip"))
+	{
+		std::cout << "No backup exists. If this is first load, this is normal (:" << std::endl;
+		return;
+	}
+	//unzip backup
+	unzip("DDLoader_Backup.zip");
+	//move DDLMM from resources folder to directory this is ran from
+	moveFile("resources\\DDLMM.exe", ".");
+
+	//delete backup
+	deleteFile("DDLoader_Backup.zip");
+	//run DDLMM
+	runFile("DDLMM.exe");
+}
 
 int main()
 {
@@ -223,25 +243,26 @@ int main()
 	deleteExtraBackups();
 
 	//download zip
-	if (downloadZip("http://192.168.1.48:8000", "loader/DDLoader.zip"))
+	if (downloadZip())
 	{
 		
 	}
 	else
 	{
-		Log("Failed to download zip.\nAttempting troubleshooting...\n\n\n=====================================\n");
+		restoreBackup();
+		Log("Failed to download zip. Restoring Backup...\nAttempting troubleshooting...\n\n\n=====================================\n");
 		if (hasInternet())
 		{
 			
 			Log("hasInternet() returned true.\n");
 			if (homeServerActive())
 			{
-				Log("homeServerActive() returned true. If we've gotten to this point, something weird is going on.\n");
+				Log("homeServerActive() returned true. If we've gotten to this point, something weird is going on. Please contact Daltonyx on Discord or join at https://discord.gg/daMWV3TTea and leave a message!\n");
 				
 			}
 			else
 			{
-				Log("homeServerActive() returned false. Please contact Daltonyx on Discord or join at https://discord.gg/daMWV3TTea and leave a message!\n");
+				Log("homeServerActive() returned false. (my pi probably crashed) Please contact Daltonyx on Discord or join at https://discord.gg/daMWV3TTea and leave a message!\n");
 			}
 
 		}
